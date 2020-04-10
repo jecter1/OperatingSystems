@@ -25,7 +25,7 @@ List *createList() {
 
 int insert(List *L, char *str) {
 	if (L == NULL) {
-		perror("Insert. List is NULL");
+		perror("insert(List *L, char *str). L is NULL");
 		exit(1);
 	}
 
@@ -103,7 +103,7 @@ int main() {
 	while (buf[0] != '.') {
 		if (insert(L, buf) != 0) {
 			removeList(L);
-			perror("Pushing line");
+			perror("Inserting line");
 			exit(1);
 		}
 
@@ -119,6 +119,7 @@ int main() {
 		perror("Printing List");
 		exit(1);
 	}
+
 	removeList(L);
 
 	exit(0);

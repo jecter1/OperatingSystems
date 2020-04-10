@@ -15,8 +15,7 @@ typedef struct list {
 List *createList() {
 	List *L = (List *)malloc(sizeof(List));
 	if (L == NULL) {
-		perror("Creating List (memory allocation)");
-		exit(1);
+		return NULL;
 	}
 
 	L->head = NULL;
@@ -24,21 +23,20 @@ List *createList() {
 	return L;
 }
 
-void push(List *L, char *str) {
+int insert(List *L, char *str) {
 	if (L == NULL) {
-		return;
+		perror("Insert. List is NULL");
+		exit(1);
 	}
 
 	Node *new = (Node *)malloc(sizeof(Node));
 	if (new == NULL) {
-		perror("Pushing node (memory allocation)");
-		exit(1);
+		return 1;
 	}
 
 	new->data = strdup(str);
 	if (new->data == NULL) {
-		perror("Pushing node (copying string");
-		exit(1);
+		return 1;
 	}
 
 	new->next = NULL;
@@ -50,30 +48,34 @@ void push(List *L, char *str) {
 		L->tail->next = new;
 		L->tail = L->tail->next;
 	}
+
+	return 0;
 }
 
-void printList(List *L) {
-	if (L == NULL || L->head == NULL) {
-		return;
+int printList(List *L) {
+	if (L == NULL) {
+		perror("printList(List *L). L is NULL");
+		exit(1);
 	}
 
 	Node *tmp = L->head;
 	while (tmp != NULL) {
 		if (printf(">%s", tmp->data) < 0) {
-			perror("Printing string");
-			exit(1);
+			return 1;
 		}
 		tmp = tmp->next;
 	}
+
+	return 0;
 }
 
 void removeList(List *L) {
-	if (L == NULL || L->head == NULL) {
-		return;
+	if (L == NULL) {
+		perror("removeList(List *L). L is NULL");
+		exit(1);
 	}
 
 	Node * tmp;
-
 	while (L->head != NULL) {
 		tmp = L->head;
 		L->head = L->head->next;
@@ -85,33 +87,38 @@ void removeList(List *L) {
 
 int main() {
 	List *L = createList();
+	if (L == NULL) {
+		perror("Creating List");
+		exit(1);
+	}
 
 	char buf[BUFSIZ];
+
 	if (fgets(buf, BUFSIZ, stdin) == NULL) {
+		removeList(L);
 		perror("Getting new line");
 		exit(1);
 	}
 
-	char *str;
-
 	while (buf[0] != '.') {
-		str = strdup(buf);
-		if (str == NULL) {
-			perror("Copying string from buffer");
+		if (insert(L, buf) != 0) {
+			removeList(L);
+			perror("Pushing line");
 			exit(1);
 		}
 
-		push(L, str);
-		
 		if (fgets(buf, BUFSIZ, stdin) == NULL) {
+			removeList(L);
 			perror("Getting new line");
 			exit(1);
 		}
-		
-		free(str);
 	}
 
-	printList(L);
+	if (printList(L) != 0) {
+		removeList(L);
+		perror("Printing List");
+		exit(1);
+	}
 	removeList(L);
 
 	exit(0);

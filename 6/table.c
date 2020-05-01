@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include "my_read.h"
 
 #define INIT_TABLE_SIZE 1024
 #define BUFF_SIZE 1024
@@ -34,7 +35,7 @@ Table* makeTable(int fd) {
 	ssize_t n;
 
 	// reading file. If there are '\n' -> make new table entry
-	while ((n = read(fd, buff, BUFF_SIZE)) > 0) {
+	while ((n = my_read(fd, buff, BUFF_SIZE)) > 0) {
 		for (ssize_t i = 0; i < n; i++) {
 			if (buff[i] == '\n') {
 				// realloc if there are no space for new line
@@ -102,7 +103,7 @@ int printLine(int fd, Table* table, int num) {
 		return -2;
 	}
 	
-	if (read(fd, buff, buffSize) < 0) {
+	if (my_read(fd, buff, buffSize) < 0) {
 		return -2;
 	}
 

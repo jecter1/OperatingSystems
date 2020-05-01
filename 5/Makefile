@@ -1,2 +1,2 @@
 all:
-	gcc lab5.c table.c -o lab5
+	gcc lab5.c table.c my_read.c -o lab5

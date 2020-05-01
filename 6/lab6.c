@@ -5,62 +5,16 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <poll.h>
+#include <signal.h>
 #include "table.h"
+#include "my_read.h"
 
 #define BUFF_SIZE 1024
 #define ERROR_VAL -1
 
-int isNumber(char* str, int len) {
-	if (str == NULL) {
-		fprintf(stderr, "isNumber(char* str, int len). str is NULL!\n");
-		exit(ERROR_VAL);
-	} // incorrect usage
-	if (len < 0) {
-		fprintf(stderr, "isNumber(char* str, int len). len < 0!\n");
-		exit(ERROR_VAL);
-	} // incorrect usage
+int isNumber(char* str, int len);
 
-	if (!(str[0] >= '0' && str[0] <= '9') && str[0] != '-' && str[0] != '+') {
-		return 0;
-	} // examlpe: "a..."
-
-	if ((str[0] == '-' || str[0] == '+') && len == 1) {
-		return 0;
-	} // example: "-"
-
-	for (int i = 1; (i < len) && isNumber; i++) {
-		if (!(str[i] >= '0' && str[i] <= '9')) {
-			return 0;
-		}
-	} // example: "-124a..."
-	
-	return 1;
-}
-
-int printContent(int fd) {
-	if (fd < 0) {
-		fprintf(stderr, "printContent(int fd). fd < 0!\n");
-		exit(ERROR_VAL);
-	} // incorrect usage
-
-	if (lseek(fd, 0, SEEK_SET) == (off_t) -1) {
-		return -1;
-	}
-
-	char buff[BUFF_SIZE + 1];
-	ssize_t n;
-
-	while ((n = read(fd, buff, BUFF_SIZE)) > 0) {
-		buff[BUFF_SIZE] = '\0';
-		printf("%s", buff);
-	}
-
-	if (n == -1) {
-		return -2;
-	}
-
-	return 0;
-}
+int printContent(int fd);
 
 int main(int argc, char** argv) {
 	if (argc != 2) {
@@ -119,7 +73,7 @@ int main(int argc, char** argv) {
 		return 0;
 	}
 
-	// READ NUMBER & PRINT LINE
+	// READING NUMBER & PRINTING LINE
 	char str[BUFSIZ];
 	int num;
 	int printLineVal;
@@ -155,5 +109,57 @@ int main(int argc, char** argv) {
 		fprintf(stderr, "Closing '%s': %s\n", argv[1], strerror(errno));
 		return ERROR_VAL;
 	}
+	return 0;
+}
+
+int isNumber(char* str, int len) {
+	if (str == NULL) {
+		fprintf(stderr, "isNumber(char* str, int len). str is NULL!\n");
+		exit(ERROR_VAL);
+	} // incorrect usage
+	if (len < 0) {
+		fprintf(stderr, "isNumber(char* str, int len). len < 0!\n");
+		exit(ERROR_VAL);
+	} // incorrect usage
+
+	if (!(str[0] >= '0' && str[0] <= '9') && str[0] != '-' && str[0] != '+') {
+		return 0;
+	} // examlpe: "a..."
+
+	if ((str[0] == '-' || str[0] == '+') && len == 1) {
+		return 0;
+	} // example: "-"
+
+	for (int i = 1; (i < len) && isNumber; i++) {
+		if (!(str[i] >= '0' && str[i] <= '9')) {
+			return 0;
+		}
+	} // example: "-124a..."
+	
+	return 1;
+}
+
+int printContent(int fd) {
+	if (fd < 0) {
+		fprintf(stderr, "printContent(int fd). fd < 0!\n");
+		exit(ERROR_VAL);
+	} // incorrect usage
+
+	if (lseek(fd, 0, SEEK_SET) == (off_t) -1) {
+		return -1;
+	}
+
+	char buff[BUFF_SIZE + 1];
+	ssize_t n;
+
+	while ((n = my_read(fd, buff, BUFF_SIZE)) > 0) {
+		buff[n] = '\0';
+		printf("%s", buff);
+	}
+
+	if (n == -1) {
+		return -2;
+	}
+
 	return 0;
 }

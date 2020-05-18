@@ -3,27 +3,28 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <errno.h>
 
 int main() {
 	pid_t cpid, w;
 	int wstatus;
 
-	if ((cpid = fork()) > 0) { 
-		// parent
+	if ((cpid = fork()) > 0) { // PARENT
 		printf("Parent: waiting for child\n\n");
-		w = wait(&wstatus);
+
+		do { w = wait(&wstatus); } while (w == -1 && errno == EINTR); // EINTR => wait() again
+
 		if (w == -1) {
 			perror("wait");
 			exit(EXIT_FAILURE);
 		}
+
 		printf("\nParent: child terminated\n");
-	} else if (cpid == 0) { 
-		// child
+	} else if (cpid == 0) { // CHILD
 		execl("/bin/cat", "cat", "text", (char *) NULL);
-		perror("execl:");
+		perror("execl");
 		exit(EXIT_FAILURE);
-	} else { 
-		// error
+	} else { // ERROR
 		perror("fork");
 		exit(EXIT_FAILURE);
 	}

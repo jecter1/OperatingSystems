@@ -8,7 +8,7 @@
 
 int pclose_while_EINTR(FILE* pipe) {
 	int n;
-	do { pclose(pipe); } while (n == -1 && errno == EINTR);
+	do { n = pclose(pipe); } while (n == -1 && errno == EINTR);
 	return n;
 }
 

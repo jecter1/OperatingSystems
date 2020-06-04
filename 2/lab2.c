@@ -3,54 +3,58 @@
 #include <time.h>
 #include <stdlib.h>
 
+#define BUFSIZE 256
+
 extern char *tzname[];
 
-main() {
+int main() {
 	time_t now;
-	struct tm *sp;
 	int err;
-	char *timeStr;
 
 	if (putenv("TZ=America/Los_Angeles") != 0) {
-		perror("Setting TZ");
-		exit(1);
+		perror("putenv()");
+		exit(EXIT_FAILURE);
 	}
 
 	if (time(&now) == (time_t)(-1)) {
-		perror("Getting current time");
-		exit(1);
+		perror("time()");
+		exit(EXIT_FAILURE);
 	}
 
-	timeStr = ctime(&now);
-	if (timeStr == NULL) {
-		perror("Making string (ctime)");
-		exit(1);
+	// ctime_r()
+	char timeStr[BUFSIZE];
+	if (ctime_r(&now, timeStr) == NULL) {
+		perror("ctime_r()");
+		exit(EXIT_FAILURE);
 	}
 
-	err = printf("%s", timeStr);
+	err = printf(">ctime_r():\n%s", timeStr);
 	if (err < 0) {
-		perror("Writing time (ctime)");
-		exit(1);
+		perror("Writing time (ctime_r)");
+		exit(EXIT_FAILURE);
+	}
+	// ~ctime_r()
+
+	// localtime_r()
+	struct tm result;
+	if (localtime_r(&now, &result) == NULL) {
+		perror("localtime_r()");
+		exit(EXIT_FAILURE);
 	}
 
-	sp = localtime(&now);
-	if (sp == NULL) {
-		perror("Getting local time");
-		exit(1);
-	}
-
-	err = printf("%d/%d/%02d %d:%02d %s\n",
-		sp->tm_mon + 1,
-		sp->tm_mday,
-		sp->tm_year % 100,
-		sp->tm_hour,
-		sp->tm_min,
-		tzname[sp->tm_isdst]);
+	err = printf(">localtime_r():\n%d/%d/%02d %d:%02d %s\n",
+		result.tm_mon + 1,
+		result.tm_mday,
+		result.tm_year % 100,
+		result.tm_hour,
+		result.tm_min,
+		tzname[result.tm_isdst]);
 
 	if (err < 0) {
-		perror("Writing time (localtime)");
-		exit(1);
+		perror("Writing time (localtime_r)");
+		exit(EXIT_FAILURE);
 	}
+	// ~localtime_r()
 
-	exit(0);
+	exit(EXIT_SUCCESS);
 }

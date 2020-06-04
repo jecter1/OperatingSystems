@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-#define BUFSIZE 256
+#define BUFSIZE 32
 
 ssize_t read_while_EINTR(int fd, void* buf, size_t count) {
 	ssize_t n;
@@ -21,8 +21,9 @@ int main() {
 	}
 
 	for (int i = 0; i < strlen(buf); ++i) {
-		buf[i] = toupper((unsigned char) buf[i]);
+		buf[i] = toupper((unsigned char)buf[i]);
 	}
 
-	printf("Proc2 recieved message from proc1: %s\n", buf);
+	printf(">P2 recieved message from P1: \n\"%s\"\n", buf);
+	exit(EXIT_SUCCESS);
 }

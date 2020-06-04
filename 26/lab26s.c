@@ -22,10 +22,11 @@ int main() {
 
 	int wstatus = pclose(pipein);
 	if (WIFEXITED(wstatus) && WEXITSTATUS(wstatus) == EXIT_SUCCESS) {
-		printf(">Success!\n");
 		exit(EXIT_SUCCESS);
+	} else if (WIFEXITED(wstatus)) {
+		fprintf(stderr, "Error: P2 exited with exit code %d\n", WEXITSTATUS(wstatus));
+	} else if (WIFSIGNALED(wstatus)) {
+		fprintf(stderr, "Error: P2 was killed by signal %d\n", WTERMSIG(wstatus));
 	}
-
-	fprintf(stderr, "Something went wrong.\n");
 	exit(EXIT_FAILURE);
 }

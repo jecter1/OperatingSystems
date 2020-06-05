@@ -24,9 +24,6 @@ int main() {
 	if (wstatus == -1) {
 		// pclose() error => failure
 		perror("pclose");
-		if (remove("tmpfile") != 0) {
-			perror("remove");
-		}
 		exit(EXIT_FAILURE);
 	if (WIFEXITED(wstatus) && WEXITSTATUS(wstatus) == EXIT_SUCCESS) {
 		// lab26r success => success

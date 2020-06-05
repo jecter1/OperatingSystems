@@ -21,11 +21,21 @@ int main() {
 	printf(">P1 sent message to P2: \n\"%s\"\n", buf);
 
 	int wstatus = pclose(pipein);
+	if (wstatus == -1) {
+		// pclose() error => failure
+		perror("pclose");
+		if (remove("tmpfile") != 0) {
+			perror("remove");
+		}
+		exit(EXIT_FAILURE);
 	if (WIFEXITED(wstatus) && WEXITSTATUS(wstatus) == EXIT_SUCCESS) {
+		// lab26r success => success
 		exit(EXIT_SUCCESS);
 	} else if (WIFEXITED(wstatus)) {
+		// lab26r exit code != 0 => failure
 		fprintf(stderr, "Error: P2 exited with exit code %d\n", WEXITSTATUS(wstatus));
 	} else if (WIFSIGNALED(wstatus)) {
+		// lab26r killed by signal => failure
 		fprintf(stderr, "Error: P2 was killed by signal %d\n", WTERMSIG(wstatus));
 	}
 	exit(EXIT_FAILURE);

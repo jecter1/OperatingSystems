@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
 
 	char cmd[BUFSIZE] = "{ cat ";
 	strcat(cmd, argv[1]);
-	strcat(cmd, "; echo $? > tmpfile; } | wc -l");
+	strcat(cmd, "; echo $? > tmpfile; } | grep '^$' | wc -l");
 
 	FILE* pipeout = popen(cmd, "r");
 	if (pipeout == NULL) {
@@ -24,7 +24,14 @@ int main(int argc, char* argv[]) {
 	fscanf(pipeout, "%d", &cnt);
 
 	int wstatus = pclose(pipeout);
-	if (WIFEXITED(wstatus) && WEXITSTATUS(wstatus) == 0) {
+	if (wstatus == -1) {
+		// pclose() error => failure
+		perror("pclose");
+		if (remove("tmpfile") != 0) {
+			perror("remove");
+		}
+		exit(EXIT_FAILURE);
+	} else if (WIFEXITED(wstatus) && WEXITSTATUS(wstatus) == 0) {
 		// cat exit code != 0 => failure
 		FILE* tmp = fopen("tmpfile", "r");
 		if (tmp == NULL) {
@@ -55,8 +62,10 @@ int main(int argc, char* argv[]) {
 		printf(">Count of lines: %d\n", cnt);
 		exit(EXIT_SUCCESS);
 	} else if (WIFEXITED(wstatus)) {
+		// wc exit code != 0 => failure
 		fprintf(stderr, "Error: wc exited with exit code %d\n", WEXITSTATUS(wstatus));
 	} else if (WIFSIGNALED(wstatus)) {
+		// wc exit code != 0 => failure
 		fprintf(stderr, "Error: wc was killed by signal %d\n", WTERMSIG(wstatus));
 	}
 	if (remove("tmpfile") != 0) {
